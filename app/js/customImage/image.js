@@ -49,8 +49,9 @@ export class CustomImage{
    return this._image.height;
  }
 
- get inBoundingBox(x,y)
+  inBoundingBox(x,y)
  {
+
    return ((x >= this.xPos && x <= this.xPos+ this.width) && (y >= this.yPos && y <= this.yPos + this.height));
  }
 }

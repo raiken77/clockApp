@@ -115,55 +115,32 @@ function setParameters() {
 }
 
 function setListeners() {
-  dynamicCanvas.addEventListener("mousedown", () => {
-    if ((event.clientX >= images.clockBtn.xPos && event.clientX <= (images.clockBtn.xPos + images.clockBtn.width))) {
+  dynamicCanvas.addEventListener("mousemove", () => {
 
-      if (event.clientY >= images.upArrow.yPos && event.clientY <= (images.upArrow.yPos + images.upArrow.height)) {
+    // if (images.minuteHand.inBoundingBox(event.clientX, event.clientY)) {
 
 
-        minuteHandAngle += minuteHandDegree;
-        hourHandAngle += hourHandDegree;
+      // dynamicCanvas.onmousemove = () => {
+        console.log("xpos is :" + event.clientX);
+        console.log("x mid point of minutehand is: " +(images.minuteHand.xPos + images.minuteHand.width/2) );
+        var dx = event.clientX - (images.minuteHand.xPos );
+        var dy = event.clientY - (images.minuteHand.yPos);
+        var degrees = Math.atan2(dy,dx);
+        // console.log(degrees);
         dynamicContext.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
-        rotateImage(minuteHandAngle, images.minuteHand.xPos + images.minuteHand.width / 2, images.minuteHand.yPos + images.minuteHand.height, images.minuteHand);
-        rotateImage(hourHandAngle, images.hourHand.xPos + images.hourHand.width / 2, images.hourHand.yPos + images.hourHand.height, images.hourHand);
-        minutes++;
-        if (minutes % 60 == 0) {
-          hours++;
-          minutes = 0;
-        }
-        hours = (hours > 12) ? hours - 12 : hours;
-        let minutesText = (minutes < 10) ? "0" + Math.abs(minutes) : Math.abs(minutes).toString();
-        let hourText = (hours < 10) ? "0" + Math.abs(hours) : Math.abs(hours).toString();
-        dynamicContext.fillText(hourText, hourHandxPos, hourHandyPos);
-        dynamicContext.fillText(minutesText, minuteHandxPos, minuteHandyPos);
-      }
-      else {
-        minuteHandAngle -= minuteHandDegree;
-        hourHandAngle -= hourHandDegree;
-        dynamicContext.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
-        rotateImage(minuteHandAngle, images.minuteHand.xPos + images.minuteHand.width / 2, images.minuteHand.yPos + images.minuteHand.height, images.minuteHand);
-        rotateImage(hourHandAngle, images.hourHand.xPos + images.hourHand.width / 2, images.hourHand.yPos + images.hourHand.height,images.hourHand);
+        rotateImage(degrees, images.minuteHand.xPos + images.minuteHand.width / 2, images.minuteHand.yPos + images.minuteHand.height, images.minuteHand);
+        // rotateImage(hourHandAngle, images.hourHand.xPos + images.hourHand.width / 2, images.hourHand.yPos + images.hourHand.height, images.hourHand);
+      // }
+    // }
 
-        minutes--;
-        if (minutes < 0) {
-          hours--;
-          minutes = 59;
-        }
-        hours = (hours <= 0) ? 12 : hours;
-        let minutesText = (minutes < 10) ? "0" + Math.abs(minutes) : Math.abs(minutes).toString();
-        let hoursText = (hours < 10) ? "0" + Math.abs(hours) : Math.abs(hours).toString();
-        dynamicContext.fillText(hoursText, hourHandxPos, hourHandyPos);
-        dynamicContext.fillText(minutesText, minuteHandxPos, minuteHandyPos);
-      }
-    }
   });
 }
 
 function rotateImage(angle, translateXpos, translateYpos, imageObj) {
   dynamicContext.save();
   dynamicContext.translate(translateXpos, translateYpos);
-  dynamicContext.rotate(angle * (Math.PI / 180));
-  dynamicContext.translate(-(translateXpos), -(translateYpos));
+  dynamicContext.rotate(angle);
+  dynamicContext.translate(-(translateXpos), - (translateYpos));
   dynamicContext.drawImage(imageObj.image, imageObj.xPos, imageObj.yPos);
   dynamicContext.restore();
 
