@@ -115,17 +115,26 @@ function setParameters() {
 }
 
 function setListeners() {
-  dynamicCanvas.addEventListener("mousemove", () => {
+
+  dynamicCanvas.addEventListener("click", () =>
+  {
+    console.log("mouse click x is: " + event.clientX);
+    console.log("mouse click y is: " + event.clientY);
+    console.log("x pos of minutehand is :" + (images.minuteHand.xPos + images.minuteHand.width/2) );
+    console.log("y pos of minutehand is: " + (images.minuteHand.yPos + images.minuteHand.height));
+  });
+
+   dynamicCanvas.addEventListener("mousemove", () => {
 
     // if (images.minuteHand.inBoundingBox(event.clientX, event.clientY)) {
 
 
       // dynamicCanvas.onmousemove = () => {
-        console.log("xpos is :" + event.clientX);
-        console.log("x mid point of minutehand is: " +(images.minuteHand.xPos + images.minuteHand.width/2) );
-        var dx = event.clientX - (images.minuteHand.xPos );
-        var dy = event.clientY - (images.minuteHand.yPos);
-        var degrees = Math.atan2(dy,dx);
+        // console.log("xpos is :" + event.clientX);
+        // console.log("x mid point of minutehand is: " +(images.minuteHand.xPos + images.minuteHand.width/2) );
+        var dx = event.clientX - (images.minuteHand.xPos + images.minuteHand.width/2 );
+        var dy = event.clientY - (images.minuteHand.yPos + images.minuteHand.height);
+        var degrees = Math.atan2(dy,dx)+ 1.5708 ;
         // console.log(degrees);
         dynamicContext.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
         rotateImage(degrees, images.minuteHand.xPos + images.minuteHand.width / 2, images.minuteHand.yPos + images.minuteHand.height, images.minuteHand);
@@ -155,7 +164,7 @@ function rotateImage(angle, translateXpos, translateYpos, imageObj) {
 
 
 // addDigitalWatchNumbers();
-imageloadObserver = window.setInterval(checkIfloaded, 400)
+imageloadObserver = window.setInterval(checkIfloaded, 400);
 
 
 
@@ -327,5 +336,3 @@ imageloadObserver = window.setInterval(checkIfloaded, 400)
 //       }
 //     }
 //   });
-//
-// });
