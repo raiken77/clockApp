@@ -153,8 +153,8 @@ function setListeners() {
 
 //Makes the minutehand point to the cursor 
 function minuteHand() {
-  var dx = mousePositionX - (images.minuteHand.xPos + images.minuteHand.width / 2);
-  var dy = mousePositionY - (images.minuteHand.yPos + images.minuteHand.height);
+  var dx = mousePositionX - (images.minuteHand.midpointX);
+  var dy = mousePositionY - (images.minuteHand.bottomPart);
   angle = Math.atan2(dy, dx) + 1.5708;
   var degrees = Math.floor(angle * 57.2958);
   degrees = (degrees < 0) ? 360 + degrees : degrees;
@@ -193,32 +193,32 @@ function minuteHand() {
 
 
   hourHandAngle = ((hourcount * degPerHour) + Math.floor((degrees / minuteHandDegree) * hourHandDegree)) * (Math.PI / 180);
-  minutes = Math.floor(degrees/6);
+  minutes = Math.floor(degrees/minuteHandDegree);
   correctHour();
   dynamicContext.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
-  rotateImage(angle, images.minuteHand.xPos + images.minuteHand.width / 2, images.minuteHand.yPos + images.minuteHand.height, images.minuteHand);
-  rotateImage(hourHandAngle, images.hourHand.xPos + images.hourHand.width / 2, images.hourHand.yPos + images.hourHand.height, images.hourHand);
+  rotateImage(angle, images.minuteHand.midpointX, images.minuteHand.bottomPart, images.minuteHand);
+  rotateImage(hourHandAngle, images.hourHand.midpointX, images.hourHand.bottomPart, images.hourHand);
   dynamicContext.fillText(padInput(hours), hourHandxPos, hourHandyPos);
   dynamicContext.fillText(padInput(minutes), minuteHandxPos, minuteHandyPos);
 }
 
 //Makes the hour hand point to the cursor
 function hourhand() {
-  var dx = mousePositionX - (images.hourHand.xPos + images.hourHand.width / 2);
-  var dy = mousePositionY - (images.hourHand.yPos + images.hourHand.height);
+  var dx = mousePositionX - (images.hourHand.midpointX);
+  var dy = mousePositionY - (images.hourHand.bottomPart);
 
   angle = Math.atan2(dy, dx) + 1.5708;
   var degrees = Math.round((angle * 57.2958) * 10)/10;
   degrees = (degrees < 0) ? (360 + degrees) : degrees;
-  var minutehandmovement = (degrees/0.5 * 6) * (Math.PI/180);
+  var minutehandmovement = (degrees/hourHandDegree * minuteHandDegree) * (Math.PI/180);
 
-  minutes = Math.floor((degrees/0.5) % 60);
-  hours = Math.floor((degrees/30));
+  minutes = Math.floor((degrees/hourHandDegree) % 60);
+  hours = Math.floor((degrees/degPerHour));
   correctHour();
 
   dynamicContext.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
-  rotateImage(minutehandmovement, images.minuteHand.xPos + images.minuteHand.width / 2, images.minuteHand.yPos + images.minuteHand.height, images.minuteHand);
-  rotateImage(angle, images.hourHand.xPos + images.hourHand.width / 2, images.hourHand.yPos + images.hourHand.height, images.hourHand);
+  rotateImage(minutehandmovement, images.minuteHand.midpointX, images.minuteHand.bottomPart, images.minuteHand);
+  rotateImage(angle, images.hourHand.midpointX, images.hourHand.bottomPart, images.hourHand);
   dynamicContext.fillText(padInput(hours), hourHandxPos, hourHandyPos);
   dynamicContext.fillText(padInput(minutes), minuteHandxPos, minuteHandyPos);
 }
