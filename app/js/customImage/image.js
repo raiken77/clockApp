@@ -49,9 +49,39 @@ export class CustomImage{
    return this._image.height;
  }
 
+ get updatedXpos()
+ {
+   return this._updatedXpos;
+ }
+
+ get updatedYpos()
+ {
+   return this._updatedYpos;
+ }
+
+ set updatedXpos(xpos)
+ {
+   this._updatedXpos = xpos;
+ }
+
+ set updatedYpos(ypos)
+ {
+   this._updatedYpos = ypos;
+ }
+
+
+ get midpointX()
+ {
+   return this._image.width/2 + this.xPos;
+ }
+
+ get bottomPart()
+ {
+   return this._image.height + this.yPos;
+ }
+
   inBoundingBox(x,y)
  {
-
-   return ((x >= this.xPos && x <= this.xPos+ this.width) && (y >= this.yPos && y <= this.yPos + this.height));
+   return ((x >= this.updatedXpos && x <= this.updatedXpos+ this.width) && (y >= this.updatedYpos && y <= this.updatedYpos + this.height));
  }
 }
