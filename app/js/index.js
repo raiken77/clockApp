@@ -64,9 +64,11 @@ function checkIfloaded() {
   }
 }
 
-//Sets all the parameters. The background is static and starts from the origin.
-// The analogue clock is placed 1/4 of the screen from the left. All the other objects are relative to the 
-//analogue clock.
+/**
+ * Sets all the parameters. The background is static and starts from the origin.
+ * The analogue clock is placed 1/4 of the screen from the left. All the other objects are relative to the
+ * analogue clock. 
+ */
 function setParameters() {
 
   images.background.xPos = 0;
