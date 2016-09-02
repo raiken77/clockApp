@@ -31,7 +31,6 @@ var hours = 12;
 var reqFrame;
 var hourcount = 0;
 
-
 const images = {
   background: new CustomImage("./assets/static/background.jpg"),
   wristWatch: new CustomImage("./assets/static/clockresized.png"),
@@ -98,10 +97,7 @@ function draw()
 {
   backgroundContext.drawImage(images.background.image, images.background.xPos, images.background.yPos);
   backgroundContext.drawImage(images.wristWatch.image, images.wristWatch.xPos, images.wristWatch.yPos);
-  // backgroundContext.drawImage(images.clockBtn.image, images.clockBtn.xPos, images.clockBtn.yPos);
   backgroundContext.drawImage(images.digitalWatch.image, images.digitalWatch.xPos, images.digitalWatch.yPos);
-  // backgroundContext.drawImage(images.upArrow.image, images.upArrow.xPos, images.upArrow.yPos);
-  // backgroundContext.drawImage(images.downArrow.image, images.downArrow.xPos, images.downArrow.yPos);
   dynamicContext.drawImage(images.minuteHand.image, images.minuteHand.xPos, images.minuteHand.yPos);
   dynamicContext.drawImage(images.hourHand.image, images.minuteHand.xPos, images.hourHand.yPos);
   dynamicContext.font = '50pt verdana, sans-serif';
