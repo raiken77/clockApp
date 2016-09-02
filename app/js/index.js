@@ -19,12 +19,27 @@ var minuteHandxPos;
 var minuteHandyPos;
 var hourHandxPos;
 var hourHandyPos;
+var midpoint;
+var inleftQuadrant = false;
+var inrightQuadrant = false;
+
+var mousePositionX = 0;
+var prevmousePositionX = -1;
+var mousePositionY = 0;
 
 var minuteHandAngle = 0;
 var hourHandAngle = 0;
+var angle = 0;
+var movingAngle = 0;
 
 var minutes = 0;
+var prevDegrees = -1;
+var prevMinutes = -1;
 var hours = 12;
+var someAngle = 0;
+
+var reqFrame;
+var hourcount = 0;
 
 const images = {
   background: new CustomImage("./assets/static/background.jpg"),
@@ -59,14 +74,6 @@ function checkIfloaded() {
     clearInterval(imageloadObserver);
     setParameters();
 
-  }
-}
-
-
-
-function addDigitalWatchNumbers() {
-  for (var i = 0; i <= 59; i++) {
-    images[i.toString()] = new CustomImage("./assets/dynamic/numbers/" + i + ".png");
   }
 }
 
@@ -116,33 +123,44 @@ function setParameters() {
 
 function setListeners() {
 
-  dynamicCanvas.addEventListener("click", () =>
-  {
+  dynamicCanvas.addEventListener("click", () => {
     console.log("mouse click x is: " + event.clientX);
     console.log("mouse click y is: " + event.clientY);
-    console.log("x pos of minutehand is :" + (images.minuteHand.xPos + images.minuteHand.width/2) );
-    console.log("y pos of minutehand is: " + (images.minuteHand.yPos + images.minuteHand.height));
+    // console.log("x pos of minutehand is :" + (images.minuteHand.xPos));
+    // console.log("y pos of minutehand is: " + (images.minuteHand.yPos + images.minuteHand.height));
   });
 
-   dynamicCanvas.addEventListener("mousemove", () => {
+  dynamicCanvas.addEventListener("mousedown", () => {
 
-    // if (images.minuteHand.inBoundingBox(event.clientX, event.clientY)) {
+    if(images.hourHand.inBoundingBox(event.clientX,event.clientY))
+    {
+      dynamicCanvas.onmousemove = () =>
+      {
+        mousePositionX = event.clientX;
+        mousePositionY = event.clientY;
 
+        reqFrame = window.requestAnimationFrame(hourhand);
+      }
+    }
 
-      // dynamicCanvas.onmousemove = () => {
-        // console.log("xpos is :" + event.clientX);
-        // console.log("x mid point of minutehand is: " +(images.minuteHand.xPos + images.minuteHand.width/2) );
-        var dx = event.clientX - (images.minuteHand.xPos + images.minuteHand.width/2 );
-        var dy = event.clientY - (images.minuteHand.yPos + images.minuteHand.height);
-        var degrees = Math.atan2(dy,dx)+ 1.5708 ;
-        // console.log(degrees);
-        dynamicContext.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
-        rotateImage(degrees, images.minuteHand.xPos + images.minuteHand.width / 2, images.minuteHand.yPos + images.minuteHand.height, images.minuteHand);
-        // rotateImage(hourHandAngle, images.hourHand.xPos + images.hourHand.width / 2, images.hourHand.yPos + images.hourHand.height, images.hourHand);
-      // }
-    // }
+    else if(images.minuteHand.inBoundingBox(event.clientX,event.clientY))
+    {
+       dynamicCanvas.onmousemove = () =>
+      {
+        mousePositionX = event.clientX;
+        mousePositionY = event.clientY;
+
+        reqFrame = window.requestAnimationFrame(minuteHand);
+      }
+    }
+  });
+
+    dynamicCanvas.addEventListener("mouseup", () => {
+      window.cancelAnimationFrame(reqFrame);
+      dynamicCanvas.onmousemove = null;
 
   });
+
 }
 
 function rotateImage(angle, translateXpos, translateYpos, imageObj) {
@@ -152,187 +170,96 @@ function rotateImage(angle, translateXpos, translateYpos, imageObj) {
   dynamicContext.translate(-(translateXpos), - (translateYpos));
   dynamicContext.drawImage(imageObj.image, imageObj.xPos, imageObj.yPos);
   dynamicContext.restore();
-
+  console.log("image new xpos is :" + ((imageObj.xPos + imageObj.width/2)  * -Math.cos(angle) - (imageObj.yPos + imageObj.height)  * -Math.sin(angle)));
+  console.log("image new ypos is :" + (imageObj.yPos + imageObj.height * Math.sin(angle)));
 }
 
+function minuteHand() {
+  var dx = mousePositionX - (images.minuteHand.xPos + images.minuteHand.width / 2);
+  var dy = mousePositionY - (images.minuteHand.yPos + images.minuteHand.height);
+  angle = Math.atan2(dy, dx) + 1.5708;
+  var degrees = Math.floor(angle * 57.2958);
+  degrees = (degrees < 0) ? 360 + degrees : degrees;
 
+  if (degrees <= 90 || degrees >= 270) {
+    if (degrees >= 270 && degrees < 360) {
+      inleftQuadrant = true;
+      if (inrightQuadrant) {
+        hourcount--;
+        inrightQuadrant = false;
+        minutes = 59;
+      }
+    }
 
+    if (degrees >= 0 && degrees <= 90) {
+      inrightQuadrant = true;
+      if (inleftQuadrant) {
 
+        hourcount++;
+        inleftQuadrant = false;
+      }
+    }
+  }
+  else {
+    inrightQuadrant = false;
+    inleftQuadrant = false;
+  }
+  hours = hourcount;
 
+  hourHandAngle = ((hourcount * 30) + Math.floor((degrees / 6) * 0.5)) * (Math.PI / 180);
 
+  //Update hour hand because a minute has passed. A minute is 6 degrees.
+  if (degrees % 6 == 0) {
+    var minutesPassed = minutes;
+    minutes = degrees / 6;
+  }
 
+  dynamicContext.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
+  rotateImage(angle, images.minuteHand.xPos + images.minuteHand.width / 2, images.minuteHand.yPos + images.minuteHand.height, images.minuteHand);
+  rotateImage(hourHandAngle, images.hourHand.xPos + images.hourHand.width / 2, images.hourHand.yPos + images.hourHand.height, images.hourHand);
 
+  hours = hours % 12;
 
-// addDigitalWatchNumbers();
+  if (hours == 0) {
+    hours = 12;
+  }
+  dynamicContext.fillText(padInput(hours), hourHandxPos, hourHandyPos);
+  dynamicContext.fillText(padInput(minutes), minuteHandxPos, minuteHandyPos);
+}
+
+function hourhand() {
+  var dx = mousePositionX - (images.hourHand.xPos + images.hourHand.width / 2);
+  var dy = mousePositionY - (images.hourHand.yPos + images.hourHand.height);
+
+  angle = Math.atan2(dy, dx) + 1.5708;
+  console.log("angle is : " + angle);
+  var degrees = Math.round((angle * 57.2958) * 10)/10;
+  degrees = (degrees < 0) ? (360 + degrees) : degrees;
+  var minutehandmovement = (degrees/0.5 * 6) * (Math.PI/180);
+
+  minutes = Math.floor((degrees/0.5) % 60);
+  hours = Math.floor((degrees/30));
+  correctHour();
+  console.log("hours : " + hours);
+
+  dynamicContext.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
+  rotateImage(minutehandmovement, images.minuteHand.xPos + images.minuteHand.width / 2, images.minuteHand.yPos + images.minuteHand.height, images.minuteHand);
+  rotateImage(angle, images.hourHand.xPos + images.hourHand.width / 2, images.hourHand.yPos + images.hourHand.height, images.hourHand);
+  dynamicContext.fillText(padInput(hours), hourHandxPos, hourHandyPos);
+  dynamicContext.fillText(padInput(minutes), minuteHandxPos, minuteHandyPos);
+}
+
+function correctHour()
+{
+  hours = hours % 12;
+  if(hours == 0)
+  {
+    hours = 12;
+  }
+}
+
+function padInput(number) {
+  return number < 10 ? ("0" + number) : number.toString();
+}
+
 imageloadObserver = window.setInterval(checkIfloaded, 400);
-
-
-
-// var hours = 0;
-// var minutes = 0;
-//
-//
-//
-//
-
-//
-// var imagesToLoad =
-//   {
-//     background: "./assets/static/background.jpg",
-//     wristWatch: "./assets/static/clockresized.png",
-//     digitalWatch: "./assets/static/digital_times_resized.png",
-//     clockBtn: "./assets/static/clockbtnresized.png",
-//     minuteHand: "",
-//     hourHand: "./assets/dynamic/hands/hourhandresized.png",
-//     // hand: "./hand.png",
-//     // pinch: "./pinch.png",
-//     semicolon: "./assets/static/semicolon.png",
-//     upArrow: "./assets/static/upArrow.png",
-//     downArrow: "./assets/static/downArrow.png"
-//
-//   };
-//
-// function loadNumbers() {
-//   for (i = 0; i <= 59; i++) {
-//     imagesToLoad[i.toString()] = "./assets/dynamic/numbers/" + i + ".png";
-//   }
-// }
-//
-// function preloadImages(imagesPath, drawImages) {
-//   loadNumbers();
-//
-//   var images = {};
-//   var imagesLoaded = 0;
-//   var numImages = 0;
-//
-//   for (var image in imagesPath) {
-//     numImages++;
-//   }
-//
-//   for (var image in imagesPath) {
-//     images[image] = new Image();
-//     images[image].onload = () => {
-//       if (++imagesLoaded >= numImages) {
-//         drawImages(images);
-//       }
-//     };
-//     images[image].src = imagesPath[image];
-//   }
-// }
-//
-// function test() {
-//   console.log("in here");
-// }
-//
-//
-//
-//
-//
-// preloadImages(imagesToLoad, (images) => {
-//   var clockXpos = maincanvas.width/4 - images.wristWatch.width;
-//   var clockYPos = maincanvas.height / 4;
-//   var minutehandXpos = (clockXpos + images.wristWatch.width/2 - images.minuteHand.width/2 );
-//   var minutehandYpos = ((maincanvas.height / 4) + (images.wristWatch.height / 2) - images.minuteHand.height);
-//   var clockBtnXpos = clockXpos + images.wristWatch.width;
-//   var clockBtnYpos = (images.wristWatch.height / 2 + maincanvas.height / 4) - (images.clockBtn.height / 2);
-//
-//   var hourHandXpos = (clockXpos + images.wristWatch.width/2 - images.hourHand.width/2);
-//   var hourHandYpos = ((minuteHandCanvas.height / 4) + (images.wristWatch.height / 2) - images.hourHand.height);
-//   var hoursXPos = images["12"].width / 2 + maincanvas.width / 2;
-//   var hoursYpos = maincanvas.height / 2 - images["12"].height / 2;
-//   var semicolonXPos = hoursXPos + images["digitalWatch"].width / 4;
-//   var semicolonYPos = hourHandYpos - images["digitalWatch"].height / 5;
-//   var minuteXpos = images["12"].width / 2 + semicolonXPos;
-//   var minuteYpos = hoursYpos
-//   var upArrowYpos = clockBtnYpos - images.upArrow.height ;
-//   var downArrowYpos = clockBtnYpos + images.clockBtn.height;
-//   var angle = 0;
-//   var hourhandAngle = 0;
-//
-//   ctx.drawImage(images.background, 0, 0);
-//   ctx.drawImage(images.wristWatch, clockXpos, clockYPos);
-//
-//   ctx.drawImage(images.clockBtn, clockBtnXpos, clockBtnYpos);
-//   minuteHandContext.drawImage(images.hourHand, hourHandXpos, hourHandYpos);
-//   minuteHandContext.drawImage(images.minuteHand, minutehandXpos, minutehandYpos);
-//   ctx.drawImage(images.digitalWatch, (maincanvas.width * 3) / 6, (images.wristWatch.height/2 + maincanvas.height/4) - (images.digitalWatch.height/2));
-//   minuteHandContext.drawImage(images["14"], hoursXPos, hoursYpos);
-//   ctx.drawImage(images["semicolon"], semicolonXPos, semicolonYPos);
-//   minuteHandContext.drawImage(images["0"], minuteXpos, minuteYpos);
-//   ctx.drawImage(images.upArrow,clockBtnXpos,upArrowYpos);
-//   ctx.drawImage(images.downArrow,clockBtnXpos,downArrowYpos);
-//
-//
-//
-//   minuteHandCanvas.addEventListener("mousedown", () => {
-//
-//     if ((event.clientX >= clockBtnXpos && event.clientX <= (clockBtnXpos + images.clockBtn.width))) {
-//
-//       if(event.clientY >= upArrowYpos && event.clientY <= (upArrowYpos + images.upArrow.height))
-//       {
-//           minuteHandContext.clearRect(0, 0, minuteHandCanvas.width, minuteHandCanvas.height);
-//
-//           minuteHandContext.save();
-//           angle += 6;
-//           minuteHandContext.translate(minutehandXpos + images.minuteHand.width / 2, minutehandYpos + images.minuteHand.height);
-//           minuteHandContext.rotate(angle * (Math.PI / 180));
-//           minuteHandContext.translate(-(minutehandXpos + images.minuteHand.width / 2), -(minutehandYpos + images.minuteHand.height));
-//           minuteHandContext.drawImage(images.minuteHand, minutehandXpos, minutehandYpos);
-//
-//           minuteHandContext.restore();
-//
-//           minuteHandContext.save();
-//           hourhandAngle += 0.5;
-//           minuteHandContext.translate(hourHandXpos + images.hourHand.width / 2, hourHandYpos + images.hourHand.height);
-//           minuteHandContext.rotate(hourhandAngle * (Math.PI / 180));
-//           minuteHandContext.translate(-(hourHandXpos + images.hourHand.width / 2), -(hourHandYpos + images.hourHand.height));
-//           minuteHandContext.drawImage(images.hourHand, hourHandXpos, hourHandYpos);
-//
-//           minuteHandContext.restore();
-//
-//           minutes++;
-//           if (minutes % 60 == 0) {
-//             hours++;
-//             minutes = 0;
-//           }
-//
-//           hours = (hours > 12) ? hours - 12 : hours;
-//
-//           minuteHandContext.drawImage(images[Math.abs(hours).toString()], hoursXPos, hoursYpos);
-//           minuteHandContext.drawImage(images[Math.abs(minutes).toString()], minuteXpos, minuteYpos);
-//       }
-//       else if(event.clientY >= downArrowYpos && event.clientY <= (downArrowYpos + images.downArrow.height))
-//       {
-//           minuteHandContext.clearRect(0, 0, minuteHandCanvas.width, minuteHandCanvas.height);
-//
-//           minuteHandContext.save();
-//           angle -= 6;
-//           minuteHandContext.translate(minutehandXpos + images.minuteHand.width / 2, minutehandYpos + images.minuteHand.height);
-//           minuteHandContext.rotate(angle * (Math.PI / 180));
-//           minuteHandContext.translate(-(minutehandXpos + images.minuteHand.width / 2), -(minutehandYpos + images.minuteHand.height));
-//
-//           minuteHandContext.drawImage(images.minuteHand, minutehandXpos, minutehandYpos);
-//
-//           minuteHandContext.restore();
-//
-//           minuteHandContext.save();
-//           hourhandAngle -= 0.5;
-//           minuteHandContext.translate(hourHandXpos + images.hourHand.width / 2, hourHandYpos + images.hourHand.height);
-//           minuteHandContext.rotate(hourhandAngle * (Math.PI / 180));
-//
-//           minuteHandContext.translate(-(hourHandXpos + images.hourHand.width / 2), -(hourHandYpos + images.hourHand.height));
-//           minuteHandContext.drawImage(images.hourHand, hourHandXpos, hourHandYpos);
-//
-//           minuteHandContext.restore();
-//
-//           minutes--;
-//           if (minutes < 0) {
-//             hours--;
-//             minutes = 59;
-//           }
-//           hours = (hours <= 0) ? 12 : hours;
-//           minuteHandContext.drawImage(images[Math.abs(hours).toString()], hoursXPos, hoursYpos);
-//           minuteHandContext.drawImage(images[Math.abs(minutes).toString()], minuteXpos, minuteYpos);
-//       }
-//     }
-//   });
