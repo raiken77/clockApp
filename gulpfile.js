@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var browserify = require('browserify');
 var babelify = require('babelify');
 var source = require('vinyl-source-stream');
+var something = '';
 gulp.task('build',function()
 {
   return browserify({entries: './app/js/index.js',debug:true})
